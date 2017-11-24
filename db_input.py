@@ -24,9 +24,20 @@ resultsRecord = {}
 
 testsRecord["test"] = input("Type number of test you need or new test name: ")
 
-try:
-    test = avaliableTests[int(testsRecord["test"]) - 1]
-except ValueError:
+if testsRecord["test"].isdecimal():
+    resultsRecord["test"] = int(testsRecord["test"])
+    testFound_flag = False
+    for record in avaliableTests:
+        if record[0] == resultsRecord["test"]:
+            print("You choose test {} - {}".format(record[0], record[1]))
+            testFound_flag = True
+            break # I hope it always sorted...
+    if testFound_flag == False:
+        print("Test {} not found".format(testsRecord["test"]))
+        conn.close()
+        input("Type any key for exit")
+        sys.exit(0)
+else:
     print("You choose new test and called it \"{}\"".format(testsRecord["test"]))
     testsRecord["descr"] = input("Type description (optional): ")
     testsRecord["units"] = input("Type units: ")
@@ -39,14 +50,6 @@ except ValueError:
         conn.close()
         input("Type any key for exit")
         sys.exit(0)
-except IndexError:
-    print("Test {} not found".format(testsRecord["test"]))
-    conn.close()
-    input("Type any key for exit")
-    sys.exit(0)
-else:
-    print("You choose test \"{}\"".format(test[1]))
-    resultsRecord["test"] = test[0]
 
 resultsRecord["date_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 resultsRecord["condition"] = input("Type test condition (optional): ")
