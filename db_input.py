@@ -20,38 +20,43 @@ def dialog(conn, cursor):
     testsRecord = {}
     resultsRecord = {}
 
-    testsRecord["test"] = input("Type number of test you need or new test name: ")
+    testsRecord["Test"] = input("Type number of test you need or new test name: ")
 
-    if testsRecord["test"].isdecimal():
-        resultsRecord["test"] = int(testsRecord["test"])
+    if testsRecord["Test"].isdecimal():
+        resultsRecord["Test"] = int(testsRecord["Test"])
         testFound_flag = False
         for record in avaliableTests:
-            if record[0] == resultsRecord["test"]:
+            if record[0] == resultsRecord["Test"]:
                 print("You choose test {} - {}".format(record[0], record[1]))
+                testsRecord["Test"] = record[1] # For following mnemonic print
                 testFound_flag = True
                 break # I hope it always sorted...
         if testFound_flag == False:
-            errprint("Test {} not found".format(testsRecord["test"]))
+            errprint("Test {} not found".format(testsRecord["Test"]))
             return
     else:
-        print("You choose new test and called it \"{}\"".format(testsRecord["test"]))
-        testsRecord["descr"] = input("Type description (optional): ")
-        testsRecord["units"] = input("Type units: ")
-        if testsRecord["test"] and testsRecord["units"]:
-            cursor.execute("INSERT INTO tests (test, descr, units) VALUES (:test, :descr, :units)", testsRecord)
+        print("You choose new test and called it \"{}\"".format(testsRecord["Test"]))
+        testsRecord["Description"] = input("Type description (optional): ")
+        testsRecord["Units"] = input("Type units: ")
+        if testsRecord["Test"] and testsRecord["Units"]:
+            cursor.execute("INSERT INTO tests (test, descr, units) VALUES (:Test, :Description, :Units)", testsRecord)
             conn.commit()
-            resultsRecord["test"] = cursor.lastrowid
+            resultsRecord["Test"] = cursor.lastrowid
         else:
             errprint("Your data is wrong", file=sys.stderr)
             return
 
-    resultsRecord["date_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    resultsRecord["condition"] = input("Type test condition (optional): ")
-    resultsRecord["value"] = input("Type test result value: ")
-    print(resultsRecord)
-    if resultsRecord["value"]:
-        cursor.execute("INSERT INTO results (test, date_time, condition, value) VALUES (:test, :date_time, :condition, :value)", resultsRecord)
+    resultsRecord["Time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    resultsRecord["Condition"] = input("Type test condition (optional): ")
+    resultsRecord["Value"] = input("Type test result value: ")
+    if resultsRecord["Value"]:
+        cursor.execute("INSERT INTO results (test, date_time, condition, value) VALUES (:Test, :Time, :Condition, :Value)", resultsRecord)
         conn.commit()
+        print("\nYou made record:")
+        print("Test: {}".format(testsRecord["Test"]))
+        for key in resultsRecord.keys():
+             if key != "Test":
+                print("{}: {}".format(key, resultsRecord[key]))
     else:
         errprint("You didn't type value!")
 
