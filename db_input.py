@@ -1,6 +1,13 @@
 import sqlite3
 from datetime import datetime
 import sys
+import colorama
+
+def errprint(*args, **kwargs):
+    print("\x1b[1;31;40mERROR: ", end="")
+    print(*args, end="", **kwargs)
+    print("\x1b[0m")
+
 
 def dialog(conn, cursor):
     cursor.execute("SELECT id, test FROM tests")
@@ -24,7 +31,7 @@ def dialog(conn, cursor):
                 testFound_flag = True
                 break # I hope it always sorted...
         if testFound_flag == False:
-            print("Test {} not found".format(testsRecord["test"]))
+            errprint("Test {} not found".format(testsRecord["test"]))
             return
     else:
         print("You choose new test and called it \"{}\"".format(testsRecord["test"]))
@@ -35,7 +42,7 @@ def dialog(conn, cursor):
             conn.commit()
             resultsRecord["test"] = cursor.lastrowid
         else:
-            print("Your data is wrong")
+            errprint("Your data is wrong", file=sys.stderr)
             return
 
     resultsRecord["date_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -46,16 +53,17 @@ def dialog(conn, cursor):
         cursor.execute("INSERT INTO results (test, date_time, condition, value) VALUES (:test, :date_time, :condition, :value)", resultsRecord)
         conn.commit()
     else:
-        print("You didn't type value!")
+        errprint("You didn't type value!")
 
 #################################
+colorama.init()
 
 try:
     conn = sqlite3.connect(sys.argv[1])
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM tests")
 except Exception:
-    print("Wrong database")
+    errprint("Wrong database")
     input("Type any key for exit")
     sys.exit(0)
 
@@ -66,7 +74,11 @@ try:
         print("")
         dialog(conn, cursor)
 except KeyboardInterrupt:
-    print("\nYou break the program")
+    print("")
+    errprint("You break the program")
+except EOFError:
+    print("")
+    errprint("You break the program")
 finally: # Unexpected break
     conn.close()
     print("--- break ---") # For debug
