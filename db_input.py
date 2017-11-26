@@ -2,6 +2,11 @@ import sqlite3
 from datetime import datetime
 import sys
 import colorama
+import win32com.client as win
+
+def fillinput(prompt, default=""):
+    win.Dispatch("WScript.Shell").SendKeys(default)
+    return input(prompt)
 
 def errprint(*args, **kwargs):
     print("\x1b[1;31;40mERROR: ", end="")
@@ -47,7 +52,12 @@ def dialog(conn, cursor):
             return
 
     resultsRecord["Time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    resultsRecord["Condition"] = input("Type test condition (optional): ")
+    
+    # Prefill condition field with value in last record
+    cursor.execute("SELECT condition FROM results ORDER BY id DESC LIMIT 1")
+    lastCondition = cursor.fetchall()
+    resultsRecord["Condition"] = fillinput("Type test condition (optional): ", default=lastCondition[0][0])
+    
     resultsRecord["Value"] = input("Type test result value: ")
     if resultsRecord["Value"]:
         cursor.execute("INSERT INTO results (test, date_time, condition, value) VALUES (:Test, :Time, :Condition, :Value)", resultsRecord)
