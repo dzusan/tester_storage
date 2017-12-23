@@ -1,0 +1,12 @@
+# Python
+*.pyc
+
+# IDE
+**/.vscode
+**/.idea
+
+# Data
+**/logs
+*.csv
+*.log
+*.txt
