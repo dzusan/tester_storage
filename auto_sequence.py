@@ -1,6 +1,3 @@
-import sys
-import time
-import psutil
 from auto_tests import *
 
 ConditionLog()
@@ -15,8 +12,9 @@ progsList = {\
 
 for key in progsList.keys():
     progsList[key][1] = startupMeter(progsList[key][0])
-    print("Waiting 10 seconds")
-    time.sleep(10)
+    waitingIdle(10)
+
+
 
 for key in progsList.keys():
     print("{} Startup time: {} seconds".format(key, progsList[key][1]))

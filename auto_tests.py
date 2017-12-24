@@ -16,6 +16,15 @@ def progressMarker(flag):
     sys.stdout.flush()
 
 
+def waitingIdle(idleSec):
+    print("Waiting ", idleSec, " seconds idle -", end="")
+    markerFlag = [True]
+    for i in range(idleSec * 2):
+        progressMarker(markerFlag)
+        time.sleep(0.5)
+    print()
+
+
 def ConditionLog():
     logsDir = "Condition logs"
     if not os.path.exists(logsDir):
