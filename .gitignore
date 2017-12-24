@@ -7,6 +7,7 @@
 
 # Data
 **/logs
+**/videos
 *.csv
 *.log
 *.txt

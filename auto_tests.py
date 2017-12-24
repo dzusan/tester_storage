@@ -4,6 +4,7 @@ import os
 import sys
 import subprocess
 from datetime import datetime
+import ffmpeg
 
 
 def progressMarker(flag):
@@ -17,7 +18,7 @@ def progressMarker(flag):
 
 
 def waitingIdle(idleSec):
-    print("Waiting ", idleSec, " seconds idle -", end="")
+    print("Waiting", idleSec, "seconds idle -", end="")
     markerFlag = [True]
     for i in range(idleSec * 2):
         progressMarker(markerFlag)
@@ -25,7 +26,7 @@ def waitingIdle(idleSec):
     print()
 
 
-def ConditionLog():
+def conditionLog():
     logsDir = "Condition logs"
     if not os.path.exists(logsDir):
         os.makedirs(logsDir)
@@ -105,12 +106,28 @@ def startupMeter(progPath, threshold = 10, samplePeriod = 0.5, frameSize = 10):
         if avg < threshold:
             finish_time = time.time()
             overall = finish_time - initial_time - ((frameSize / 2) * samplePeriod)
-            print("\nOverall startup time ", overall)
+            print("\nOverall startup time", overall)
             proc.kill()
             return overall
 
+
+def videoConvert(inputFile, outputFile):
+    stream = ffmpeg.input(inputFile, loglevel="error", stats="")
+    stream = ffmpeg.output(stream, outputFile)
+    stream = ffmpeg.overwrite_output(stream)
+
+    print("Converting {}:".format(inputFile))
+    initial_time = time.time()
+    ffmpeg.run(stream)
+    overall = time.time() - initial_time
+    print("Overall convert time", overall)
+    return overall
+
+
 # Usage
 # 
-# ConditionLog()
+# conditionLog()
 # xxx = startupMeter("E:\\portable\\pro\\Altium\\AD17\\DXP.EXE")
+# print(xxx)
+# xxx = videoConvert("test_video.mp4", "test_video.avi")
 # print(xxx)

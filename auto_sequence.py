@@ -1,7 +1,9 @@
 from auto_tests import *
 
-ConditionLog()
+# Write initial conditions
+conditionLog()
 
+# Measure programs startup time
 progsList = {\
 "AD17":["E:\\portable\\pro\\Altium\\AD17\\DXP.EXE", 0],\
 "AD18":["E:\\portable\\pro\\Altium\\AD18\\X2.EXE", 0],\
@@ -9,12 +11,15 @@ progsList = {\
 "Firefox 56":["E:\\portable\\usr\\Mozilla Firefox\\firefox.exe", 0],\
 "iTunes":["C:\\Program Files\\iTunes\\iTunes.exe", 0],\
 }
-
 for key in progsList.keys():
     progsList[key][1] = startupMeter(progsList[key][0])
     waitingIdle(10)
 
-
-
-for key in progsList.keys():
-    print("{} Startup time: {} seconds".format(key, progsList[key][1]))
+# Measure video convertion time
+videosList = {\
+"VID1":["videos\\test_video.mp4", "videos\\converted_video.avi", 0],\
+"VID2":["videos\\test_video.mp4", "videos\\converted_video.mov", 0],\
+}
+for key in videosList.keys():
+    videosList[key][2] = videoConvert(videosList[key][0], videosList[key][1])
+    waitingIdle(10)
