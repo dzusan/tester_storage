@@ -5,6 +5,7 @@ import sys
 import subprocess
 from datetime import datetime
 import ffmpeg
+import wmi
 
 
 def progressMarker(flag):
@@ -124,6 +125,16 @@ def videoConvert(inputFile, outputFile):
     return overall
 
 
+def sensorsCapture():
+    # OpenHardwareMonitor must been started
+    w = wmi.WMI(namespace="root\OpenHardwareMonitor")
+    temperature_infos = w.Sensor()
+    for sensor in temperature_infos:
+        # if sensor.SensorType==u'Temperature':
+        print("{:20} | {:>20} | {}".format(sensor.SensorType, sensor.Name, sensor.Value))
+
+
+
 # Usage
 # 
 # conditionLog()
@@ -131,3 +142,5 @@ def videoConvert(inputFile, outputFile):
 # print(xxx)
 # xxx = videoConvert("test_video.mp4", "test_video.avi")
 # print(xxx)
+
+# sensorsCapture()
