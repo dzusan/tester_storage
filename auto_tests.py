@@ -27,6 +27,44 @@ def waitingIdle(idleSec):
     print()
 
 
+def sensorsCapture():
+    # OpenHardwareMonitor must been started
+    capture = dict()
+    w = wmi.WMI(namespace="root\OpenHardwareMonitor")
+    for sensor in w.Sensor():
+        if sensor.SensorType in capture:
+            capture[sensor.SensorType][sensor.Name] = round(sensor.Value, 2)
+        else:
+            capture[sensor.SensorType] = {sensor.Name:round(sensor.Value, 2)}
+    return capture
+
+
+def hardwareCapture():
+    # OpenHardwareMonitor must been started
+
+    units = {"Voltage":"V", "Temperature":"°C", "Fan":"RPM", "Clock":"MHz", "Load":"%", "Power":"W", "Data":"GB", "Level":"%"}    
+    w = wmi.WMI(namespace="root\OpenHardwareMonitor")
+
+    hard = dict()
+    for i in w.Hardware():
+        hard[i.Identifier] = i.Name
+
+    capture = dict()
+    for sensor in w.Sensor():
+        if sensor.SensorType not in units:
+            units[sensor.SensorType] = "?"
+        hardName = hard[sensor.Parent]
+        if hardName in capture:
+            if sensor.SensorType in capture[hardName]:
+                capture[hardName][sensor.SensorType][sensor.Name] = (round(sensor.Value, 2), units[sensor.SensorType])
+            else:
+                capture[hardName][sensor.SensorType] = {sensor.Name:(round(sensor.Value, 2), units[sensor.SensorType])}
+        else:
+            capture[hardName] = {sensor.SensorType:{sensor.Name:(round(sensor.Value, 2), units[sensor.SensorType])}}
+
+    return capture
+
+
 def conditionLog():
     logsDir = "Condition logs"
     if not os.path.exists(logsDir):
@@ -48,6 +86,19 @@ def conditionLog():
     markerFlag = [True]
     cpuUsage = 0
 
+    # Write Open Hardware Monitor capture
+    logFile.write("\nOpen Hardware Monitor capture\n")
+    cap = hardwareCapture()
+    for n in cap.keys():
+        logFile.write("{}\n".format(n))
+        for i in cap[n].keys():
+            logFile.write("                   {}\n".format(i))
+            for k in sorted(cap[n][i]):
+                logFile.write("                                 {:<18} = {} {}\n".format(k, cap[n][i][k][0], cap[n][i][k][1]))
+
+    # Write psutil metrics
+    logFile.write("\npsutil metrics\n")
+
     for i in range(10):
         cpuUsage += psutil.cpu_percent(interval=0.5) / 10
         progressMarker(markerFlag)
@@ -66,7 +117,8 @@ def conditionLog():
             ))
         progressMarker(markerFlag)
 
-    logFile.write("Logging successfully finished in: {}\n".format(time.strftime("%M minutes %S seconds", time.gmtime(time.time() - initialTime))))
+    # Finish logging
+    logFile.write("\nLogging successfully finished in: {}\n".format(time.strftime("%M minutes %S seconds", time.gmtime(time.time() - initialTime))))
 
     try:
         logFile.close()
@@ -125,22 +177,28 @@ def videoConvert(inputFile, outputFile):
     return overall
 
 
-def sensorsCapture():
-    # OpenHardwareMonitor must been started
-    w = wmi.WMI(namespace="root\OpenHardwareMonitor")
-    temperature_infos = w.Sensor()
-    for sensor in temperature_infos:
-        # if sensor.SensorType==u'Temperature':
-        print("{:20} | {:>20} | {}".format(sensor.SensorType, sensor.Name, sensor.Value))
 
+### Usage
 
-
-# Usage
-# 
 # conditionLog()
+
 # xxx = startupMeter("E:\\portable\\pro\\Altium\\AD17\\DXP.EXE")
 # print(xxx)
+
 # xxx = videoConvert("test_video.mp4", "test_video.avi")
 # print(xxx)
 
-# sensorsCapture()
+# cap = sensorsCapture()
+# for i in cap.keys():
+#     print(i)
+#     for k in sorted(cap[i]):
+#         print("{:>18} = {}".format(k, cap[i][k]))
+
+# cap = hardwareCapture()
+# for n in cap.keys():
+#     print(n)
+#     # print('{str:{filler1}<{len1}}\n{down:{filler2}>{len2}}'.format(str=n, len1=22, len2=23, filler1='-', filler2=' ', down='|'))
+#     for i in cap[n].keys():
+#         print("                   ", i)
+#         for k in sorted(cap[n][i]):
+#             print("                                 {:<18} = {} {}".format(k, cap[n][i][k][0], cap[n][i][k][1]))
